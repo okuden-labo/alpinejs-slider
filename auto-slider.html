@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alpine.js 画像スライダー</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body>
+  <div class="w-full">
+    <div x-data="carousel" @mouseenter="stopAutoplay()" @mouseleave="startAutoplay()" class="relative w-full overflow-hidden bg-black">
+      <div class="relative h-[760px] w-full">
+        <template x-for="image in images" :key="image.id">
+          <div x-show="selectedId === image.id" x-transition:enter="transition opacity ease-in-out duration-1000" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition opacity ease-in-out duration-1000" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0">
+            <img :src="image.img" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[5000ms] ease-linear" :class="selectedId === image.id ? 'scale-100' : 'scale-110'">
+            <div class="absolute inset-0 flex items-end bg-gradient-to-t from-black/80 via-black/20 to-transparent p-12 text-white">
+              <div class="max-w-2xl" x-show="selectedId === image.id" x-transition:enter="transition opacity transform ease-out duration-700 delay-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+                <h3 class="text-3xl font-bold md:text-5xl" x-text="image.label"></h3>
+                <p class="mt-4 text-lg text-slate-200" x-text="image.text"></p>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div class="absolute inset-0 flex items-center justify-between px-4 pointer-events-none">
+        <button @click="prev()" class="pointer-events-auto z-10 rounded-full bg-white/10 p-3 text-white backdrop-blur-md hover:bg-white/30 transition-all focus:outline-none">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"></path>
+          </svg>
+        </button>
+        <button @click="next()" class="pointer-events-auto z-10 rounded-full bg-white/10 p-3 text-white backdrop-blur-md hover:bg-white/30 transition-all focus:outline-none">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 gap-3">
+        <template x-for="image in images" :key="image.id">
+          <button @click="selectedId = image.id" class="h-1.5 rounded-full transition-all duration-500 focus:outline-none" :class="selectedId === image.id ? 'bg-white w-8' : 'bg-white/40 w-4'">
+          </button>
+        </template>
+      </div>
+    </div>
+  </div>
+  <script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('carousel', () => ({
+      selectedId: 1,
+      autoplayInterval: 5000,
+      timer: null,
+      images: [
+        { id: 1, label: 'Luxury Stay', text: '日常を忘れる、極上のひとときを。', img: '01.jpg' },
+        { id: 2, label: 'Fine Dining', text: '厳選された素材による四季折々の料理。', img: '02.jpg' },
+        { id: 3, label: 'Relaxation', text: '心と体を整える、至福のスパ体験。', img: '03.jpg' },
+        { id: 4, label: 'Beautiful View', text: '窓の外に広がる、息を呑むような絶景。', img: '04.jpg' },
+      ],
+
+      init() {
+        // 確実にタイマーを開始
+        this.startAutoplay();
+      },
+
+      next() {
+        // 最後のIDかどうかを判定してループさせる
+        let currentIndex = this.images.findIndex(img => img.id === this.selectedId);
+        this.selectedId = this.images[(currentIndex + 1) % this.images.length].id;
+      },
+
+      prev() {
+        let currentIndex = this.images.findIndex(img => img.id === this.selectedId);
+        this.selectedId = this.images[(currentIndex - 1 + this.images.length) % this.images.length].id;
+      },
+
+      startAutoplay() {
+        this.stopAutoplay(); // 重複防止
+        this.timer = setInterval(() => {
+          this.next();
+        }, this.autoplayInterval);
+      },
+
+      stopAutoplay() {
+        if (this.timer) {
+          clearInterval(this.timer);
+          this.timer = null;
+        }
+      }
+    }));
+  });
+  </script>
+</body>
+
+</html>
